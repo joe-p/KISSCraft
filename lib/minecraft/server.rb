@@ -8,16 +8,16 @@ module KISSCraft
 
     class Server
       class << self
-        def get_servers(status = nil)
+        def instances
+          @@instances
+        end
 
-          all_servers = ObjectSpace.each_object(self).to_a
-
-          if status
-            return all_servers.select {|s| s.status == status}
-          else
-            return all_servers
+        def get(names)
+          if names.is_a? String
+            names = [names]
           end
 
+          @@instances.select {|s| names.include? s.name}
         end
       end
 
@@ -34,7 +34,7 @@ module KISSCraft
 
         if Dir["./servers/#{name}"].empty?
           Log.puts "ERROR: #{name} does not exit"
-          return 1
+          raise ArgumentError
         else
           @server_dir = "./servers/#{name}"
         end
@@ -46,7 +46,13 @@ module KISSCraft
 
         @server_input_queue = Queue.new
         @server_output_queue = Queue.new
+        
+        @@instances ||= []
+        @@instances << self
 
+      end
+
+      def start
         start_server
         start_input_output_threads
       end

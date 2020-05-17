@@ -2,12 +2,23 @@
 
 require 'tty-prompt'
 require 'tty-spinner'
+require_relative 'tree_parse'
+require "pry"
 
 module KISSCraft
+
+  SERVERS_DIR = File.expand_path("#{__dir__}/../servers").freeze
 
   class CLI
 
     def initialize
+
+      server_names = Dir.glob("#{SERVERS_DIR}/*").map {|path| File.basename path}
+
+      server_names.each do |name|
+        KISSCraft::Minecraft::Server.new name 
+      end
+
       @prompt = TTY::Prompt.new
 
       @user_input_queue = Queue.new
@@ -18,9 +29,9 @@ module KISSCraft
         user_input = @user_input_queue.pop
 
         if user_input == "exit"
-          servers = KISSCraft::Minecraft::Server.get_servers(:running)
+          servers = KISSCraft::Minecraft::Server.instances.select {|s| s.status == :running}
 
-          multi_spinner = TTY::Spinner::Multi.new("[:spinner] Shutting down servers")
+          multi_spinner = TTY::Spinner::Multi.new("[:spinner] Shutting down running servers")
 
           servers.each do |s|
             multi_spinner.register("[:spinner] #{s.name}") do |sp| 
@@ -34,43 +45,72 @@ module KISSCraft
 
           multi_spinner.auto_spin 
 
-
-
           return 0
         end
 
+        parse_commands(user_input)
+        
         render_prompt
+      end
+    end
 
-        servers = KISSCraft::Minecraft::Server.get_servers
+    def parse_commands(input)
+      input_array = input.split
 
-        server = nil
+      selected_servers = [] 
+      
+      kc = false
+      
+      if input_array.first == "kc"
+        kc = true
+        input_array.delete_at(0)
+      end
 
-        if servers.count == 1
-          server = servers.first 
+      tree = TreeParse.new input_array
+
+
+      tree.parse do |t|
+        t.on "start" do
+          get_selected_servers(t).each do |s|
+            Log.puts "Attempting to start #{s.name}", "INFO", s.name, "Startup"
+            s.start
+          end
         end
 
-        if /^kc/ =~ user_input
-          commands = user_input.split
-
-          if commands[1] == "start"
-            Log.puts "Attempting to start #{commands[2]}", "INFO", commands[2], "Startup"
-            server = KISSCraft::Minecraft::Server.new(commands[2])
-
-            next
-          end
-
-          if commands[1] == "players"
-            if commands[2] == "list"
-              Log.puts server.current_players.keys
+        t.on "players" do
+          t.on "list" do
+            get_selected_servers(t, true).each do |s|
+              next unless s.status == :running
+              log_str = "Players in #{s.name}: #{s.current_players.keys.join(",")}"
+              Log.puts log_str, "INFO", s.name, "PlayerQuery"
             end
-
           end
-
-
-        else
-          server.server_input_queue << user_input
         end
 
+      end
+    end
+
+    def get_selected_servers(t, return_all_when_empty = false)
+      parsed_names = t.down
+      
+      servers = KISSCraft::Minecraft::Server.instances
+     
+      if parsed_names.empty?
+        
+        if servers.size == 1 or return_all_when_empty
+          return servers
+        end
+
+        if @attached_server
+          return [@attached_server]
+        end
+
+      end
+
+      if parsed_names.include? "all" 
+        return servers
+      else
+        servers.select {|s| parsed_names.include? s.name}
       end
     end
 
@@ -79,6 +119,7 @@ module KISSCraft
         @user_input_queue << @prompt.ask("=>")
       end
     end
+
 
   end
 
