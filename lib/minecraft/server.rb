@@ -39,7 +39,7 @@ module KISSCraft
           @server_dir = "./servers/#{name}"
         end
 
-        @current_players = Hash.new
+        @current_players = []
 
         @putting_block = false
         @capturing_error = false
@@ -92,7 +92,7 @@ module KISSCraft
         @output_thread = Thread.new do
           loop do
             line = server_output_queue.pop 
-
+            Log.puts line
             if @putting_block
               if /^\[\d\d:\d\d:\d\d\]/ =~ line
                 @putting_block = false
@@ -134,14 +134,14 @@ module KISSCraft
               player_uuid = player_info.last
               player_name = player_info.first
 
-              @current_players[player_name] = KISSCraft::Minecraft::Player.new(player_name, player_uuid)
+              @current_players << KISSCraft::Minecraft::Player.new(player_name, player_uuid)
 
               next
             end
 
-            if line[/(?<=join with) \d (?=mods)/]
+            if line[/(?<=join with) \d* (?=mods)/]
               mods = line.split(":").last.split(",")
-              @current_players.values.last.mods = mods
+              @current_players.last.set_mods mods
               next
             end
 

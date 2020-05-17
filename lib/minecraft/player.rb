@@ -16,6 +16,10 @@ module KISSCraft
       def set_mods(mod_arr)
         @mods = mod_arr
       end
+
+      def to_json(*args)
+        {name: @name, uuid: @uuid, mods: @mods}.to_json(args)
+      end
     end
 
   end
