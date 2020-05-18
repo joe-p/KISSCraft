@@ -9,7 +9,10 @@ require_relative '../lib/minecraft/player'
 
 module KISSCraft
   class WebApp < Roda
-
+    plugin :render, views: "web/views"
+    plugin :forme_route_csrf
+    plugin :sessions, secret: "ewzxcweofijjpoijoijpoqwijfpoiwjqpoefiqjwfefjekjwlfijeofijwoipqoiwjpofeijqopiwjefpoqijpoeijf"
+    
     Thread.new do
       sleep 0.1
       KISSCraft::CLI.new
@@ -23,6 +26,19 @@ module KISSCraft
         KISSCraft::Minecraft::Server.instances.to_a.first.current_players
       end
 
+      r.is "test" do
+        render "test"
+      end
+
+      r.is "mods" do
+        r.post do
+          p r.params
+          r.redirect "mods"
+        end
+
+        @servers = KISSCraft::Minecraft::Server.instances.to_a
+        render "mods"
+      end
     end
   end
 

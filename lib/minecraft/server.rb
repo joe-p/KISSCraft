@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'open3'
+require_relative 'forge_mod'
 
 module KISSCraft
 
@@ -29,6 +30,8 @@ module KISSCraft
       attr_accessor :server_input_queue
       attr_accessor :server_output_queue 
 
+      attr_reader :mods
+
       def initialize(_name)
         @name = _name
 
@@ -46,10 +49,20 @@ module KISSCraft
 
         @server_input_queue = Queue.new
         @server_output_queue = Queue.new
-        
+
+        @mods = []
+
         @@instances ||= []
         @@instances << self
 
+
+        Dir.glob("#{@server_dir}/mods/*").each do |mod_link|
+
+          mod_file = File.realpath mod_link
+          
+          @mods << KISSCraft::ForgeMod.new(mod_link)
+
+        end
       end
 
       def start

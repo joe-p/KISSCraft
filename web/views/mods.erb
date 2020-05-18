@@ -1,0 +1,39 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<% form(:action=>'/mods', :method => "POST", :onsubmit => "return confirm('Are \\nyou sure you want to submit?');") do |f| %>
+  <%# f.tag(:fieldset) do %>
+    <% @servers.each do |server| %>
+    <table class="table">
+      <tr> 
+        <th>Enabled</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Version</th>
+      </tr>
+        <h1>
+          <%= server.name %>
+        </h1>
+        <% server.mods.each do |mod| %>
+        <tr>
+          <td>
+            <%= f.input(:checkbox, name: mod.name) %>
+          </td>
+          
+          <td>
+            <%= mod.name %>
+          </td>
+
+          <td> 
+            <%= mod.description %>
+          </td>
+
+          <td> 
+            <%= mod.version %>
+          </td>
+        </tr>
+      <% end %>
+      <% end %>
+    </table>
+    <%# end %>
+    <%= f.button("Apply changes") %>
+  <% end %>
