@@ -61,7 +61,6 @@ module KISSCraft
           mod_file = File.realpath mod_link
           
           @mods << KISSCraft::ForgeMod.new(mod_link)
-
         end
       end
 
@@ -99,6 +98,10 @@ module KISSCraft
         @server_thread.kill
         @output_thread.kill
 
+      end
+
+      def mod(name)
+        @mods.find {|mod| mod.name == name}
       end
 
       def start_input_output_threads 
