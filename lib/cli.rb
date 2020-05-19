@@ -23,7 +23,7 @@ module KISSCraft
 
       @user_input_queue = Queue.new
 
-      render_prompt
+      #render_prompt
 
       loop do
         user_input = @user_input_queue.pop
