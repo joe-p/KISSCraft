@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'tty-prompt'
-require 'tty-spinner'
 require_relative 'tree_parse'
 require "pry"
 
@@ -17,40 +15,6 @@ module KISSCraft
 
       server_names.each do |name|
         KISSCraft::Minecraft::Server.new name 
-      end
-
-      @prompt = TTY::Prompt.new
-
-      @user_input_queue = Queue.new
-
-      #render_prompt
-
-      loop do
-        user_input = @user_input_queue.pop
-
-        if user_input == "exit"
-          servers = KISSCraft::Minecraft::Server.instances.select {|s| s.status == :running}
-
-          multi_spinner = TTY::Spinner::Multi.new("[:spinner] Shutting down running servers")
-
-          servers.each do |s|
-            multi_spinner.register("[:spinner] #{s.name}") do |sp| 
-              s.stop
-              until s.status == :stopped
-                sleep(1)
-              end
-              sp.success('gracefully stopped') 
-            end
-          end
-
-          multi_spinner.auto_spin 
-
-          return 0
-        end
-
-        parse_commands(user_input)
-        
-        render_prompt
       end
     end
 
