@@ -29,6 +29,8 @@ module KISSCraft
 
       attr_accessor :server_input_queue
       attr_accessor :server_output_queue 
+      attr_accessor :console_queue
+      attr_accessor :console_connections
 
       attr_reader :mods
 
@@ -49,6 +51,8 @@ module KISSCraft
 
         @server_input_queue = Queue.new
         @server_output_queue = Queue.new
+        @console_queue = Queue.new
+        @console_connections = Set.new
 
         @mods = []
 
@@ -81,8 +85,10 @@ module KISSCraft
             end
 
             Thread.new do
-              input = server_input_queue.pop
-              stdin.puts input
+              loop do
+                input = server_input_queue.pop
+                stdin.puts input
+              end
             end
 
             thr.join
@@ -106,9 +112,12 @@ module KISSCraft
 
       def start_input_output_threads 
         @output_thread = Thread.new do
+          errors = []
           loop do
             line = server_output_queue.pop 
-            Log.puts line
+            
+            Log.server(self, line)
+            
             if @putting_block
               if /^\[\d\d:\d\d:\d\d\]/ =~ line
                 @putting_block = false
@@ -138,10 +147,8 @@ module KISSCraft
 
 
             if line.include? "[minecraft/DedicatedServer]: Done"
-              Log.puts("#{name} is up!", "INFO", name, "Startup")
-              Log.puts(@open3_thread.pid.to_s)
-              @status = :running
-              
+              Log.server(self, "#{name} is up!", "INFO", "Startup")
+              @status = :running 
               next
             end
 
@@ -162,7 +169,7 @@ module KISSCraft
             end
 
             if line.include? "FAILED TO BIND TO PORT"
-              Log.puts("There was already a service running on port #{@port}", "ERROR", name, "Startup")
+              Log.server(server, "There was already a service running on port #{@port}", "ERROR", "Startup")
             end
        
           end

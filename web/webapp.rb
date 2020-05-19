@@ -12,22 +12,56 @@ module KISSCraft
     plugin :render, views: "web/views"
     plugin :forme_route_csrf
     plugin :sessions, secret: "ewzxcweofijjpoijoijpoqwijfpoiwjqpoefiqjwfefjekjwlfijeofijwoipqoiwjpofeijqopiwjefpoqijpoeijf"
+    plugin :json, classes: [Array, Hash, KISSCraft::Minecraft::Player] 
+    plugin :websockets
 
-    Thread.new do
-      sleep 0.1
-      KISSCraft::CLI.new
+    KISSCraft::CLI.new
+    MC_SERVER = KISSCraft::Minecraft::Server.instances.to_a.first
+    MC_SERVER.start
+
+    def on_message(connection, server, message)
+      if message == "JOINED"
+        server.console_connections << connection 
+      else
+        puts message
+        server.server_input_queue << message
+      end
     end
 
-    plugin :json, classes: [Array, Hash, KISSCraft::Minecraft::Player] 
+    def messages(connection)
+      Enumerator.new do |yielder|
+        loop do
+          message = connection.read
+          break unless message
+
+          yielder << message
+        end
+      end
+    end
 
     route do |r|
+
+      r.is "console" do
+        r.websocket do |connection|
+          messages(connection).each do |message|
+            on_message(connection, MC_SERVER, message)
+          end 
+        end
+
+        render "console"
+      end
+
+      r.is "status" do
+      end
 
       r.is "players" do
         KISSCraft::Minecraft::Server.instances.to_a.first.current_players
       end
 
       r.is "test" do
-        render "test"
+        @test ||= "first"
+        puts "HERE" + @test
+        @test = "trolololol"
       end
 
       r.is "mods" do

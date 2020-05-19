@@ -1,4 +1,5 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env -S falcon serve --count 1 --config
+
 require "roda"
 
 require_relative 'web/webapp'

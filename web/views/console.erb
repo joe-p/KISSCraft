@@ -1,0 +1,103 @@
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+  <title>WebSockets Example</title>
+
+  <style>
+
+/* https://www.w3schools.com/howto/howto_css_fixed_sidebar.asp*/
+/* The sidebar menu */
+.sidenav {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 160px; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+  background-color: #111; /* Black */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+}
+
+/* The navigation menu links */
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+/* Style page content */
+.main {
+  margin-left: 160px; /* Same as the width of the sidebar */
+  padding: 0px 10px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+
+#output {
+  overflow: scroll;
+  background-color: grey;
+  height: 85%;
+
+}
+#stdin {
+    width: 100%;
+}
+
+  </style>
+
+</head>
+<body>
+  <div class="sidenav">
+    <a href="/console">Console</a>
+    <a href="/mods">Mods</a>
+  </div>
+  <div class="main">
+    <div id="output"></div>
+    <div id="input">
+      <input type="text" id="stdin" name="stdin">
+    </div>
+  </div>
+  <script>
+    const socket = new WebSocket('wss://localhost:9292/console');
+
+const mcConsole = document.getElementById('output');
+
+const stdin = document.getElementById("stdin");
+
+stdin.addEventListener("keydown", function (e) {
+  if (e.keyCode === 13) {  //checks whether the pressed key is "Enter"
+    writeToStdin(e.target.value);
+    e.target.value = "";
+  }
+});
+
+function writeToStdin(data){
+  socket.send(JSON.stringify(data));
+};
+
+socket.onopen = function() {
+  socket.send(JSON.stringify("JOINED"));
+};
+
+socket.onmessage = function(event) {
+  mcConsole.innerHTML += "<div>" + JSON.parse(event.data) + "</div>";
+};
+
+  </script>
+</body>
+</html>
+
