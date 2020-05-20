@@ -76,6 +76,8 @@ GEM
     samovar (2.1.4)
       console (~> 1.0)
       mapping (~> 1.0)
+    sassc (2.3.0)
+      ffi (~> 1.9)
     tilt (2.0.10)
     timers (4.3.0)
 
@@ -88,6 +90,7 @@ DEPENDENCIES
   pry!
   roda!
   roda-websockets!
+  sassc!
   tilt!
 
 BUNDLED WITH

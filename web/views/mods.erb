@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    
+
+    <%= assets(:css) %>
     <script>
 
     function confirmModChanges() {
@@ -39,50 +40,53 @@
     </script>
   </head>
   <body>
-    <% form(:action=>'/mods', :method => "POST", :onsubmit => "return confirmModChanges();") do |f| %>
-      <%# f.tag(:fieldset) do %>
-        <% @servers.each do |server| %>
-          <table class="table">
-            <tr> 
-              <th>Enabled</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Version</th>
-            </tr>
-            <h1>
-              <%= server.name %>
-            </h1>
-            <% server.mods.each do |mod| %>
-              <tr>
-                <td>
-                  <%= 
-                    f.input(
-                      :checkbox, 
-                      checked: mod.enabled?, 
-                      name: "cb #{server.name} #{mod.name}", 
-                      class: "mod_checkbox",
-                      data: {server: server.name}
-                    ) 
-                %>
-                </td>
-
-                <td>
-                  <%= mod.name %>
-                </td>
-
-                <td> 
-                  <%= mod.description %>
-                </td>
-
-                <td> 
-                  <%= mod.version %>
-                </td>
+    <%= KISSCraft::HTMLGenerator.generate_side_nav %>
+    <div class="main">
+      <% form(:action=>'/mods', :method => "POST", :onsubmit => "return confirmModChanges();") do |f| %>
+        <%# f.tag(:fieldset) do %>
+          <% @servers.each do |server| %>
+            <table class="table">
+              <tr> 
+                <th>Enabled</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Version</th>
               </tr>
+              <h1>
+                <%= server.name %>
+              </h1>
+              <% server.mods.each do |mod| %>
+                <tr>
+                  <td>
+                    <%= 
+                      f.input(
+                        :checkbox, 
+                        checked: mod.enabled?, 
+                        name: "cb #{server.name} #{mod.name}", 
+                        class: "mod_checkbox",
+                        data: {server: server.name}
+                      ) 
+                    %>
+                  </td>
+
+                  <td>
+                    <%= mod.name %>
+                  </td>
+
+                  <td> 
+                    <%= mod.description %>
+                  </td>
+
+                  <td> 
+                    <%= mod.version %>
+                  </td>
+                </tr>
+              <% end %>
             <% end %>
+            </table>
+            <%# end %>
+            <%= f.button("Apply changes") %>
           <% end %>
-          </table>
-          <%# end %>
-          <%= f.button("Apply changes") %>
-        <% end %>
+    </div>
   </body>
 </html>

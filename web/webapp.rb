@@ -5,7 +5,7 @@ require_relative '../lib/cli'
 require_relative '../lib/log'
 require_relative '../lib/minecraft/server'
 require_relative '../lib/minecraft/player'
-
+require_relative 'html_generator'
 
 module KISSCraft
   class WebApp < Roda
@@ -14,7 +14,7 @@ module KISSCraft
     plugin :sessions, secret: "ewzxcweofijjpoijoijpoqwijfpoiwjqpoefiqjwfefjekjwlfijeofijwoipqoiwjpofeijqopiwjefpoqijpoeijf"
     plugin :json, classes: [Array, Hash, KISSCraft::Minecraft::Player] 
     plugin :websockets
-
+    plugin :assets, path: "web/assets", css: ["side.sass"]
     KISSCraft::CLI.new
     MC_SERVER = KISSCraft::Minecraft::Server.instances.to_a.first
     MC_SERVER.start
@@ -41,6 +41,8 @@ module KISSCraft
 
     route do |r|
 
+      r.assets 
+
       r.is "console" do
         r.websocket do |connection|
           messages(connection).each do |message|
@@ -51,17 +53,8 @@ module KISSCraft
         render "console"
       end
 
-      r.is "status" do
-      end
-
       r.is "players" do
         KISSCraft::Minecraft::Server.instances.to_a.first.current_players
-      end
-
-      r.is "test" do
-        @test ||= "first"
-        puts "HERE" + @test
-        @test = "trolololol"
       end
 
       r.is "mods" do

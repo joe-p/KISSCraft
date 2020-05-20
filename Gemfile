@@ -5,4 +5,5 @@ source 'https://rubygems.org' do
   gem 'pry'
   gem 'tilt'
   gem 'forme'
+  gem "sassc"
 end
