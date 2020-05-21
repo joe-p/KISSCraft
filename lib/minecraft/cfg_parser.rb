@@ -21,9 +21,16 @@ module KISSCraft
     end
 
     def gen_table
-      @html_lines << "<table class='table' id='#{@section_name}'>" 
+      @html_lines << "<table class='table' style='width: 75%;' id='#{@section_name}'>" 
+      @html_lines << "<colgroup>"
+      @html_lines << "<col spawn='1' style='width: 15%'>"
+      @html_lines << "<col spawn='1' style='width: 50%'>"
+      @html_lines << "<col spawn='1' style='width: 35%'>"
+      @html_lines << "</colgroup>"
+      @html_lines << "<tbody>"
       @html_lines << "<tr>"
       @html_lines << "<th>Variable</th>"
+      @html_lines << "<th>Comment</th>"
       @html_lines << "<th>Value </th>"
       @html_lines << "</tr>"
 
@@ -45,10 +52,15 @@ module KISSCraft
       populating_array = false
       @in_table = false
 
+      last_comment = ""
+
       cfg = File.readlines(@file_path).each_with_index do |line, num|
         line = line.strip
 
-        next if /^#/ =~ line
+        if /^#/ =~ line
+          last_comment = line.gsub("#","").strip
+          next
+        end
 
         if populating_array
 
@@ -58,8 +70,10 @@ module KISSCraft
             var_name = current_node.children.last.name
 
             @html_lines << "<td>#{var_name}</td>"
-            @html_lines << "<td><textarea rows='5' cols='30' id=#{var_name}>#{var_array.map{|v| v += "&#13;&#10"}.join("")}</textarea></td>"
+            @html_lines << "<td> #{last_comment} </td>"
+            @html_lines << "<td><textarea rows='5' style='width:100%' id=#{var_name}>#{var_array.map{|v| v += "&#13;&#10"}.join("")}</textarea></td>"
             @html_lines << "</tr>"
+            last_comment = ""
           else
             current_node.children.last.content << line.strip
           end
@@ -76,6 +90,7 @@ module KISSCraft
           @html_lines << "<h1> #{@section_name} </h1>" 
 
         elsif line.include? "}"
+          @html_lines << "</tbody>" if @in_table
           @html_lines << "</table>" if @in_table
           @in_table = false
           @section_name = nil
@@ -94,15 +109,19 @@ module KISSCraft
               value = line[/(?<==)\d*/]
 
               @html_lines << "<td>#{var_name}</td>"
+              @html_lines << "<td>#{last_comment} </td>"
               @html_lines << "<td><input type='number' id='#{var_name}' value='#{value}'></td>"
               @html_lines << "</tr>"
+              last_comment = ""
 
             elsif var_type == "B"
               value = (line.include?("=true") ? true : false)
 
               @html_lines << "<td> #{var_name}</td>"
+              @html_lines << "<td> #{last_comment} </td>"
               @html_lines << "<td><input type='checkbox' id='#{var_name}' name='#{name=var_name}'#{" checked" if value}></td>"
               @html_lines << "</tr>"
+              last_comment = ""
 
             elsif var_type == "S" and line.include? "<"
               value = Array.new
@@ -113,8 +132,10 @@ module KISSCraft
               value = line[/(?<==)[^#]*/]
               
               @html_lines << "<td>#{var_name}</td>"
+              @html_lines << "<td> #{last_comment} </td>"
               @html_lines << "<td><input type='text' id='#{var_name}' value='#{value}'></td>"
               @html_lines << "</tr>"
+              last_comment = ""
 
 
             end
