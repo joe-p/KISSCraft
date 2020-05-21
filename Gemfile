@@ -6,4 +6,5 @@ source 'https://rubygems.org' do
   gem 'tilt'
   gem 'forme'
   gem "sassc"
+  gem 'tree'
 end
