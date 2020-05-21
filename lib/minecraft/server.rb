@@ -175,6 +175,10 @@ module KISSCraft
           end
         end
       end
+
+      def cfg_files
+        Dir.glob("#{@server_dir}/config/*.cfg")
+      end
     end
   end
 end

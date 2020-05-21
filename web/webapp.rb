@@ -5,6 +5,7 @@ require_relative '../lib/cli'
 require_relative '../lib/log'
 require_relative '../lib/minecraft/server'
 require_relative '../lib/minecraft/player'
+require_relative '../lib/minecraft/cfg_parser'
 require_relative 'html_generator'
 
 module KISSCraft
@@ -55,6 +56,14 @@ module KISSCraft
 
       r.is "players" do
         KISSCraft::Minecraft::Server.instances.to_a.first.current_players
+      end
+
+      r.is "config" do
+        server = MC_SERVER
+
+        @cfg_path = server.cfg_files.first
+
+        render "config"
       end
 
       r.is "mods" do

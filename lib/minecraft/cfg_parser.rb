@@ -23,8 +23,8 @@ module KISSCraft
     def gen_table
       @html_lines << "<table class='table' style='width: 75%;' id='#{@section_name}'>" 
       @html_lines << "<colgroup>"
-      @html_lines << "<col spawn='1' style='width: 15%'>"
-      @html_lines << "<col spawn='1' style='width: 50%'>"
+      @html_lines << "<col spawn='1' style='width: 10%'>"
+      @html_lines << "<col spawn='1' style='width: 55%'>"
       @html_lines << "<col spawn='1' style='width: 35%'>"
       @html_lines << "</colgroup>"
       @html_lines << "<tbody>"
@@ -40,11 +40,6 @@ module KISSCraft
     def parse
 
       @html_lines = []
-      @html_lines << """<head>
-<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css\" integrity=\"sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm\" crossorigin=\"anonymous\">
-</head>
-<body>
-      """.split("\n")
       
       @root_node = TreeNode.new("ROOT")
       
@@ -87,11 +82,13 @@ module KISSCraft
 
           current_node = new_node
 
-          @html_lines << "<h1> #{@section_name} </h1>" 
-
+          @html_lines << "<h3 data-toggle='collapse' data-target='##{@section_name}'> #{@section_name} </h1>" 
+          @html_lines << "<div style='position:relative; left: 1%;'id='#{@section_name}' class='collapse'>" 
+        
         elsif line.include? "}"
           @html_lines << "</tbody>" if @in_table
           @html_lines << "</table>" if @in_table
+          @html_lines << "</div>"
           @in_table = false
           @section_name = nil
           current_node = current_node.parent
@@ -110,16 +107,16 @@ module KISSCraft
 
               @html_lines << "<td>#{var_name}</td>"
               @html_lines << "<td>#{last_comment} </td>"
-              @html_lines << "<td><input type='number' id='#{var_name}' value='#{value}'></td>"
+              @html_lines << "<td><input type='number' id='#{var_name}' name='#{@section_name}_#{var_name}'value='#{value}'></td>"
               @html_lines << "</tr>"
               last_comment = ""
 
             elsif var_type == "B"
               value = (line.include?("=true") ? true : false)
 
-              @html_lines << "<td> #{var_name}</td>"
-              @html_lines << "<td> #{last_comment} </td>"
-              @html_lines << "<td><input type='checkbox' id='#{var_name}' name='#{name=var_name}'#{" checked" if value}></td>"
+              @html_lines << "<td>#{var_name}</td>"
+              @html_lines << "<td>#{last_comment} </td>"
+              @html_lines << "<td><input type='checkbox' form='config' id='#{var_name}' name='#{@section_name}_#{var_name}'#{" checked" if value}></td>"
               @html_lines << "</tr>"
               last_comment = ""
 
@@ -132,8 +129,8 @@ module KISSCraft
               value = line[/(?<==)[^#]*/]
               
               @html_lines << "<td>#{var_name}</td>"
-              @html_lines << "<td> #{last_comment} </td>"
-              @html_lines << "<td><input type='text' id='#{var_name}' value='#{value}'></td>"
+              @html_lines << "<td>#{last_comment} </td>"
+              @html_lines << "<td><input type='text' id='#{var_name}' value='#{value}' name='#{@section_name}_#{var_name}'></td>"
               @html_lines << "</tr>"
               last_comment = ""
 
@@ -141,8 +138,6 @@ module KISSCraft
             end
 
             new_node = TreeNode.new(var_name, value)
-
-
 
 
             current_node << new_node
@@ -153,7 +148,9 @@ module KISSCraft
 
       end
 
-      @html_lines << "</body>"
+      @html_lines << "<form id='config' method='post'>"
+      @html_lines << "<input type='submit' value='Write Changes'>"
+      @html_lines << "</form>"
     end
 
   end
