@@ -85,10 +85,14 @@ module KISSCraft
               @html_lines << "<label style='display: inline; float: left;' for='#{var_name}'> #{var_name} </label><br>"
               @html_lines << "</li>"
 
-            elsif var_type == "S"
+            elsif var_type == "S" and line.include? "<"
               value = Array.new
 
               populating_array = true
+            
+            elsif var_type == "S"
+              value = line[/(?<==)[^#]*/]
+
             end
 
             new_node = TreeNode.new(var_name, value)
