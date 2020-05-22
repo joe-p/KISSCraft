@@ -58,12 +58,22 @@ module KISSCraft
         KISSCraft::Minecraft::Server.instances.to_a.first.current_players
       end
 
-      r.is "config" do
-        server = MC_SERVER
+      r.on "config", String do |server_name|
 
-        @cfg_path = server.cfg_files.first
+        puts "here"
+        
+        server = KISSCraft::Minecraft::Server.instances.find {|s| s.name == server_name }
+        @all_cfgs = server.cfg_files
+        
+        r.is String do |mod_name|
+          
+          @cfg_path = @all_cfgs.find {|p| File.basename(p, ".cfg") == mod_name}
+          
+          render "config"
+        end
 
-        render "config"
+
+
       end
 
       r.is "mods" do

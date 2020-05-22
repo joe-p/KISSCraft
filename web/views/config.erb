@@ -8,6 +8,12 @@
 <body>
   <%= KISSCraft::HTMLGenerator.generate_side_nav %>
   <div class="main">
+      <% @all_cfgs.each do |path| %>
+        <a href='<%= File.basename(path, ".cfg") %>' >
+          <%= File.basename(path, ".cfg") %>
+        </a>
+      <% end %>
     <%= KISSCraft::CFGParse.new(@cfg_path).html %>
+
   </div>
 </body>
